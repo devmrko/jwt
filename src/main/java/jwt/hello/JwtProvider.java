@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -35,7 +36,9 @@ public class JwtProvider implements Serializable {
 	private final String JWT_SECRET = "topas-art-local";
 	private final String JWT_AUTHORITY = "role";
 	//# 1000(sec) * 60(min) * 60(hr) * 12 = 
-	private final long JWT_ACCESSKEY_VALID_DURATION = 600000;
+	
+	@Value("${jwt.accesstime}")
+	private long JWT_ACCESSKEY_VALID_DURATION;
 	
 	UsernamePasswordAuthenticationToken getJwtAuthentication(final String token, final Authentication auth, final String username) {
 		logger.info("### ### ### JwtProvider - getAuthentication");

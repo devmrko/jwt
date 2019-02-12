@@ -15,29 +15,30 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class JwtController {
 
-	@Autowired 
+	@Autowired
 	JwtProvider jwtProvider;
+
+	@Autowired
+	private AuthenticationManager authenticationManager;
 	
-	 @Autowired
-	 private AuthenticationManager authenticationManager;
-	
+	private String defaultRole = "USER";
+
 	@RequestMapping("/rest/auth/getAccessKey")
 	public JwtTokenDetail greeting(@RequestParam(value = "id") String id, @RequestParam(value = "password") String password) {
-		
+
 		JwtUser jwtUser = new JwtUser();
 		jwtUser.setUsername(id);
-		jwtUser.setRoles("ROLES_ADMIN");
-		
+		jwtUser.setRoles(defaultRole);
+
 		SimpleGrantedAuthority authority = new SimpleGrantedAuthority(jwtUser.getRoles());
 		List<SimpleGrantedAuthority> updatedAuthorities = new ArrayList<SimpleGrantedAuthority>();
 		updatedAuthorities.add(authority);
-		
+
 		UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(jwtUser.getUsername(), password, updatedAuthorities);
 		Authentication authentication = authenticationManager.authenticate(token);
-		
 		JwtTokenDetail jwtTokenDetail = jwtProvider.generateJwtToken(authentication, jwtUser);
-		
-		return jwtTokenDetail; 
+
+		return jwtTokenDetail;
 	}
-	
+
 }
