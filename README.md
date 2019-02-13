@@ -27,30 +27,30 @@
 - log-in request
   - admin case(POST, http://localhost:8080/rest/auth/login)
   - request body below(it's mocked by source, and you can change it by your persistence later)
-<p>
+```
   {
     "username": "admin",
     "password": "admin1234"
   }
-</p>
+```
   - guest(another user) case(POST, http://localhost:8080/rest/auth/login)
   - request body below(it's mocked by source, and you can change it by your persistence later)
-<p>
+```
   {
     "username": "guest",
     "password": "guest1234"
   }
-</p>
+```
 - refresh request
   - case(POST, http://localhost:8080/rest/auth/refresh)
   - after refresh token used, can't use it again
   - request body below
-<p>
+```
   {
     "accessToken": "",
     "refreshToken": ""
   }
-</p>
+```
 - RESTful URL authentication test(mock each role, and has specific URLs)
   - greeting request which is valid for both of users
     - case(GET, http://localhost:8080/greeting)
