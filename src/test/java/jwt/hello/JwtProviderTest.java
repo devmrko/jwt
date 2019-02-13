@@ -29,13 +29,13 @@ public class JwtProviderTest {
 	@Autowired
 	private AuthenticationManager authenticationManager;
 	
-	@Value("${jwt.testuser.name}")
+	@Value("${jwt.adminuser.name}")
 	private String username;
 	
-	@Value("${jwt.testuser.pass}")
+	@Value("${jwt.adminuser.pass}")
 	private String password;
 
-	@Value("${jwt.testuser.role}")
+	@Value("${jwt.adminuser.role}")
 	private String role;
 	
 	@Test

@@ -20,14 +20,23 @@ import org.springframework.stereotype.Service;
 @Service
 public class JwtUserDetailService implements UserDetailsService {
 	
-	@Value("${jwt.testuser.name}")
-	private String username;
+	@Value("${jwt.guestuser.name}")
+	private String guestUsername;
 	
-	@Value("${jwt.testuser.pass}")
-	private String password;
+	@Value("${jwt.guestuser.pass}")
+	private String guestPassword;
 
-	@Value("${jwt.testuser.role}")
-	private String role;
+	@Value("${jwt.guestuser.role}")
+	private String guestRole;
+	
+	@Value("${jwt.adminuser.name}")
+	private String adminUsername;
+	
+	@Value("${jwt.adminuser.pass}")
+	private String adminPassword;
+
+	@Value("${jwt.adminuser.role}")
+	private String adminRole;
 
 	@Autowired
 	private AuthenticationManager authenticationManager;
@@ -35,7 +44,14 @@ public class JwtUserDetailService implements UserDetailsService {
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		// TODO add retrieving logic to get user's info by username
-		return new User(username, encoder().encode(password), getAuthority(username));
+		User user = null;
+		if("admin".equals(username)) {
+			user = new User(adminUsername, encoder().encode(adminPassword), getAuthority(adminUsername));
+		} else if("guest".equals(username)) {
+			user = new User(guestUsername, encoder().encode(guestPassword), getAuthority(guestUsername));
+		}
+		
+		return user;
 	}
 	
 	private Set<SimpleGrantedAuthority> getAuthority(String username) {
@@ -46,13 +62,25 @@ public class JwtUserDetailService implements UserDetailsService {
 		// });
 		// TODO add get authorities by username
 		// add dummy role
-		authorities.add(new SimpleGrantedAuthority(role));
+		if("admin".equals(username)) {
+			authorities.add(new SimpleGrantedAuthority(adminRole));
+		} else if("guest".equals(username)) {
+			authorities.add(new SimpleGrantedAuthority(guestRole));
+		}
+		
 		return authorities;
 	}
 	
 	public Authentication getAuthentication(String username) {
+		UsernamePasswordAuthenticationToken token = null;
+		
 		// TODO get user credential from persistence
-		UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, password, getAuthority(username));
+		if("admin".equals(username)) {
+			token = new UsernamePasswordAuthenticationToken(adminUsername, adminPassword, getAuthority(adminUsername));
+		} else if("guest".equals(username)) {
+			token = new UsernamePasswordAuthenticationToken(guestUsername, guestPassword, getAuthority(guestUsername));
+		}
+		
 		return authenticationManager.authenticate(token);
 	}
 	

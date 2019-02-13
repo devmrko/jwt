@@ -1,6 +1,7 @@
 package jwt.hello;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -11,7 +12,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -41,7 +44,8 @@ public class JwtController {
 	public JwtTokenDetail getAccessKeyByLoginRequest(@RequestBody JwtUser jwtUser) {
 
 		// TODO role assign for real
-		jwtUser.setRoles(defaultRole);
+		Collection<? extends GrantedAuthority> xxx = jwtUserDetailService.getAuthentication(jwtUser.getUsername()).getAuthorities();
+		jwtUser.setRoles(StringUtils.collectionToDelimitedString(xxx, ","));
 
 		SimpleGrantedAuthority authority = new SimpleGrantedAuthority(jwtUser.getRoles());
 		List<SimpleGrantedAuthority> updatedAuthorities = new ArrayList<SimpleGrantedAuthority>();

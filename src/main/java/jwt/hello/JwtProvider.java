@@ -4,9 +4,13 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +38,9 @@ public class JwtProvider implements Serializable {
 
 	@Autowired
 	JwtUtil jwtUtil;
+	
+	@Autowired
+	JwtRoles jwtRoles;
 
 	private static final long serialVersionUID = 373250939562443193L;
 
@@ -174,4 +181,27 @@ public class JwtProvider implements Serializable {
 		return username;
 	}
 
+	public void checkUrlByRole(HttpServletRequest request, Authentication authentication) throws Exception {
+		
+		Collection<? extends GrantedAuthority> roles = authentication.getAuthorities();
+		String path = request.getServletPath().toString();
+		Iterator<? extends GrantedAuthority> itr = roles.iterator();
+		
+		boolean isUrlVerified = false;
+		while (itr.hasNext()) {
+			GrantedAuthority element = itr.next();
+			List<String> curVerifiedUrlList = jwtRoles.getUrlRole().get(element.getAuthority());
+			for(int i = 0; curVerifiedUrlList.size() > i; i++) {
+				if(path.equals(curVerifiedUrlList.get(i))) {
+					isUrlVerified = true;
+				}
+			}
+		}
+		
+		if(!isUrlVerified) {
+			JwtCustomException jwtCustomException = new JwtCustomException(JwtErrorCodes.CSC_URL_FORBIDDEN, JwtErrorCodes.CSC_URL_FORBIDDEN.toString());
+			throw new Exception(JwtErrorCodes.CSC_URL_FORBIDDEN.toString(), jwtCustomException);
+		}
+	}
+	
 }

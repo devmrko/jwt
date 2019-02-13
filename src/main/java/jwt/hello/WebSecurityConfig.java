@@ -5,7 +5,6 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -40,15 +39,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	JwtProvider jwtProvider;
 	
-	@Value("${jwt.testuser.name}")
-	private String username;
-	
-	@Value("${jwt.testuser.pass}")
-	private String password;
-
-	@Value("${jwt.testuser.role}")
-	private String role;
-	
 	@Bean
 	public JwtFilter authenticationTokenFilterBean() throws Exception {
 		return new JwtFilter(jwtProvider);
@@ -75,47 +65,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         // Un-secure specific requests(log-in, sign-up, and etc)
         .antMatchers("/rest/auth/getAccessKey").permitAll();
         
-        //.anyRequest().authenticated();
-        
-		
-		// 
-		// httpSecurity.addFilterAfter(authenticationTokenFilterBean(), UsernamePasswordAuthenticationFilter.class);
-
-		// disable page caching
-		/**
-        httpSecurity
-            .headers()
-            .frameOptions().sameOrigin()  // required to set for H2 else H2 Console will be blank.
-            .cacheControl();
-		**/
-		
-//		httpSecurity.cors().and().csrf().disable().authorizeRequests().antMatchers("/rest/auth/**").permitAll().anyRequest()
-//				.authenticated()
-//				.and().exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and().sessionManagement()
-//				.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-		
-		// http.addFilterBefore(authenticationTokenFilterBean(), UsernamePasswordAuthenticationFilter.class);
-		
-		// httpSecurity.add(authenticationTokenFilterBean(), UsernamePasswordAuthenticationFilter.class);
-		
-		/**
-		http.cors().and().csrf().disable().authorizeRequests().antMatchers("/rest/auth/**").permitAll().anyRequest()
-				.hasAnyAuthority("ROLE_TOPAS_ADMIN", "ROLE_TOPAS_USER", "ROLE_AGENT_ADMIN", "ROLE_AGENT_USER",
-						"HIST_ADMIN")
-				.and().exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and().sessionManagement()
-				.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-		http.addFilterBefore(authenticationTokenFilterBean(), UsernamePasswordAuthenticationFilter.class);
-		**/
-		
-		// 필요한지 체크
-		// http.headers().cacheControl();
 	}
 
-//	@Override
-//	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-//		auth.inMemoryAuthentication().withUser(username).password(encoder().encode(password)).roles(role);
-//	}
-	
 	@Override
 	 public void configure(WebSecurity web) throws Exception {
 		 
