@@ -6,20 +6,26 @@ public class JwtCustomException extends RuntimeException {
 
 	private final JwtErrorCodes errorCode;
 
-	private final Object[] arguments;
+	private final String errorMessage;
 
-	public JwtCustomException(final JwtErrorCodes errorCode, final Object... arguments) {
-		super();
+	public JwtCustomException(final JwtErrorCodes errorCode, final String errorMessage, Throwable err) {
+		super(errorMessage, err);
 		this.errorCode = errorCode;
-		this.arguments = arguments;
+		this.errorMessage = errorMessage;
+	}
+
+	public JwtCustomException(final JwtErrorCodes errorCode, final String errorMessage) {
+		super(errorMessage);
+		this.errorCode = errorCode;
+		this.errorMessage = errorMessage;
 	}
 
 	public JwtErrorCodes getErrorCode() {
 		return errorCode;
 	}
 
-	public Object[] getArguments() {
-		return arguments;
+	public String getCustomMessage() {
+		return errorMessage;
 	}
 
 }

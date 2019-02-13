@@ -1,5 +1,7 @@
 package jwt.hello;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,6 +10,8 @@ import lombok.Setter;
 public class JwtUser {
 
     private String username;
+    @JsonProperty( value = "password", access = JsonProperty.Access.WRITE_ONLY)
+    private String password;
     private String roles;
     
 }

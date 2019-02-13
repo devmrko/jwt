@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -54,6 +55,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 	
 	@Override
+	@Order(1)
 	protected void configure(HttpSecurity httpSecurity) throws Exception {
 		
 		JwtFilter customFilter = new JwtFilter(jwtProvider);
@@ -109,10 +111,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		// http.headers().cacheControl();
 	}
 
-	@Override
-	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		auth.inMemoryAuthentication().withUser(username).password(encoder().encode(password)).roles(role);
-	}
+//	@Override
+//	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+//		auth.inMemoryAuthentication().withUser(username).password(encoder().encode(password)).roles(role);
+//	}
 	
 	@Override
 	 public void configure(WebSecurity web) throws Exception {
@@ -120,12 +122,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		 String authenticationPath = "/rest/auth/getAccessKey";
 		 
 		 // AuthenticationTokenFilter will ignore the below paths
+		 
 		 web
-           .ignoring()
-           .antMatchers(
-           	HttpMethod.GET,
-           	authenticationPath
-           )
+		 	.ignoring().antMatchers(HttpMethod.OPTIONS, "/**").and()
+		 	.ignoring()
+		 	.antMatchers(
+		 			HttpMethod.GET,
+		 			authenticationPath
+		 			)
 
            // allow anonymous resource requests
            .and()

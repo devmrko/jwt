@@ -10,7 +10,11 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class JwtTokenDetail {
-    private JwtUser jwtUser;
-    private String accessToken;
-    private String refreshToken;
+    
+	private JwtUser jwtUser;
+    
+	private String accessToken;
+    
+	private String refreshToken;
+	
 }
