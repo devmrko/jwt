@@ -35,6 +35,21 @@ CREATE TABLE public.jwt_rest (
 ALTER TABLE public.jwt_rest OWNER TO ehczyqgfxgqplp;
 GRANT ALL ON TABLE public.jwt_rest TO ehczyqgfxgqplp;
 
+-- jwt role
+CREATE TABLE public.jwt_role (
+	id numeric NOT NULL DEFAULT nextval('jwt_role_id_seq'::regclass),
+	rolename varchar(30) NOT NULL,
+	enabled bpchar(1) NOT NULL DEFAULT 't'::bpchar,
+	reg_datetime timestamp NOT NULL DEFAULT now(),
+	reg_id varchar(30) NOT NULL,
+	upt_datetime timestamp NOT NULL DEFAULT now(),
+	upt_id varchar(30) NOT NULL,
+	CONSTRAINT jwt_role_pk PRIMARY KEY (id)
+);
+
+ALTER TABLE public.jwt_role OWNER TO someone;
+GRANT ALL ON TABLE public.jwt_role TO someone;
+
 -- jwt policy
 CREATE TABLE public.jwt_policy (
 	role_id numeric NOT NULL,
@@ -52,21 +67,6 @@ CREATE TABLE public.jwt_policy (
 
 ALTER TABLE public.jwt_policy OWNER TO ehczyqgfxgqplp;
 GRANT ALL ON TABLE public.jwt_policy TO ehczyqgfxgqplp;
-
--- jwt role
-CREATE TABLE public.jwt_role (
-	id numeric NOT NULL DEFAULT nextval('jwt_role_id_seq'::regclass),
-	rolename varchar(30) NOT NULL,
-	enabled bpchar(1) NOT NULL DEFAULT 't'::bpchar,
-	reg_datetime timestamp NOT NULL DEFAULT now(),
-	reg_id varchar(30) NOT NULL,
-	upt_datetime timestamp NOT NULL DEFAULT now(),
-	upt_id varchar(30) NOT NULL,
-	CONSTRAINT jwt_role_pk PRIMARY KEY (id)
-);
-
-ALTER TABLE public.jwt_role OWNER TO someone;
-GRANT ALL ON TABLE public.jwt_role TO someone;
 
 -- jwt permission
 CREATE TABLE public.jwt_permission (
