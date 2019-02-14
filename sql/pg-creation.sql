@@ -32,8 +32,8 @@ CREATE TABLE public.jwt_rest (
 	CONSTRAINT jwt_rest_pk PRIMARY KEY (id)
 );
 
-ALTER TABLE public.jwt_rest OWNER TO ehczyqgfxgqplp;
-GRANT ALL ON TABLE public.jwt_rest TO ehczyqgfxgqplp;
+ALTER TABLE public.jwt_rest OWNER TO someone;
+GRANT ALL ON TABLE public.jwt_rest TO someone;
 
 -- jwt role
 CREATE TABLE public.jwt_role (
@@ -65,8 +65,8 @@ CREATE TABLE public.jwt_policy (
 	CONSTRAINT jwt_policy_jwt_role_fk FOREIGN KEY (role_id) REFERENCES jwt_role(id) ON UPDATE RESTRICT ON DELETE RESTRICT
 );
 
-ALTER TABLE public.jwt_policy OWNER TO ehczyqgfxgqplp;
-GRANT ALL ON TABLE public.jwt_policy TO ehczyqgfxgqplp;
+ALTER TABLE public.jwt_policy OWNER TO someone;
+GRANT ALL ON TABLE public.jwt_policy TO someone;
 
 -- jwt permission
 CREATE TABLE public.jwt_permission (
