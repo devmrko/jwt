@@ -1,4 +1,4 @@
-package jwt.hello;
+package jwt.hello.vo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

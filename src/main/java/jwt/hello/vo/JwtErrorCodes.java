@@ -1,4 +1,4 @@
-package jwt.hello;
+package jwt.hello.vo;
 
 public enum JwtErrorCodes {
 	CSC_JWT_EXPIRED("CSC_JWT_EXPIRED"),

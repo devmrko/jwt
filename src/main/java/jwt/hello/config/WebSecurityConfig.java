@@ -1,4 +1,4 @@
-package jwt.hello;
+package jwt.hello.config;
 
 import java.util.Arrays;
 
@@ -23,6 +23,10 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import jwt.hello.exception.JwtEntryPoint;
+import jwt.hello.service.JwtProvider;
+import jwt.hello.service.JwtUserDetailService;
+
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
@@ -38,7 +42,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
 	JwtProvider jwtProvider;
-	
+		
 	@Bean
 	public JwtFilter authenticationTokenFilterBean() throws Exception {
 		return new JwtFilter(jwtProvider);

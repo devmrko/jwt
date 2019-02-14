@@ -1,4 +1,4 @@
-package jwt.hello;
+package jwt.hello.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

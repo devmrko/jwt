@@ -1,4 +1,4 @@
-package jwt.hello;
+package jwt.hello.service;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

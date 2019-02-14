@@ -1,4 +1,6 @@
-package jwt.hello;
+package jwt.hello.exception;
+
+import jwt.hello.vo.JwtErrorCodes;
 
 public class JwtCustomException extends RuntimeException {
 

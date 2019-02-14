@@ -1,10 +1,12 @@
-package jwt.hello;
+package jwt.hello.controller;
 
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import jwt.hello.vo.Greeting;
 
 @RestController
 public class GreetingController {

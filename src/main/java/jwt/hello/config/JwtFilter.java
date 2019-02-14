@@ -1,4 +1,4 @@
-package jwt.hello;
+package jwt.hello.config;
 
 import java.io.IOException;
 
@@ -18,6 +18,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
+import jwt.hello.service.JwtProvider;
+import jwt.hello.vo.JwtErrorCodes;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {

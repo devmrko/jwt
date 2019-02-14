@@ -16,6 +16,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import jwt.hello.service.JwtProvider;
+import jwt.hello.vo.JwtTokenDetail;
+import jwt.hello.vo.JwtUser;
+
 
 @RunWith(SpringRunner.class)
 @SpringBootTest

@@ -1,4 +1,4 @@
-package jwt.hello;
+package jwt.hello.mock;
 
 import java.util.ArrayList;
 import java.util.HashMap;

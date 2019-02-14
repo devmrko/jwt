@@ -1,4 +1,4 @@
-package jwt.hello;
+package jwt.hello.exception;
 
 import java.io.IOException;
 

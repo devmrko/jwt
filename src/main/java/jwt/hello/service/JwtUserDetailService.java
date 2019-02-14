@@ -1,4 +1,4 @@
-package jwt.hello;
+package jwt.hello.service;
 
 import java.util.HashSet;
 import java.util.Set;
