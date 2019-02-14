@@ -1,6 +1,7 @@
 package jwt.hello;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -16,12 +17,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -47,6 +51,15 @@ public class JwtProvider implements Serializable {
 	private final String JWT_SECRET = "topas-art-local";
 
 	private final String JWT_AUTHORITY = "role";
+	
+	 @Autowired
+	 private AuthenticationManager authenticationManager;
+	
+	@Autowired
+	JwtUserDetailService jwtUserDetailService;
+	
+	@Autowired
+	JwtRefreshKeys jwtRefreshKeys;
 
 	@Value("${jwt.accesstime}")
 	private long JWT_ACCESSKEY_VALID_DURATION;
@@ -202,6 +215,74 @@ public class JwtProvider implements Serializable {
 			JwtCustomException jwtCustomException = new JwtCustomException(JwtErrorCodes.CSC_URL_FORBIDDEN, JwtErrorCodes.CSC_URL_FORBIDDEN.toString());
 			throw new Exception(JwtErrorCodes.CSC_URL_FORBIDDEN.toString(), jwtCustomException);
 		}
+	}
+	
+	public JwtTokenDetail getJwtTokens(JwtUser jwtUser) {
+		
+		JwtTokenDetail jwtTokenDetail = null;
+		jwtUser.setRoles(getRoleFromUsername(jwtUser.getUsername()));
+		
+		SimpleGrantedAuthority authority = new SimpleGrantedAuthority(jwtUser.getRoles());
+		List<SimpleGrantedAuthority> updatedAuthorities = new ArrayList<SimpleGrantedAuthority>();
+		updatedAuthorities.add(authority);
+		
+		try {
+			UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(jwtUser.getUsername(), jwtUser.getPassword(), updatedAuthorities);
+			Authentication authentication = authenticationManager.authenticate(token);
+			jwtTokenDetail = this.generateJwtToken(authentication, jwtUser);
+			jwtRefreshKeys.addJwtRefreshKey(jwtTokenDetail.getRefreshToken(), jwtUser.getUsername());
+			
+		} catch (BadCredentialsException ex) {
+			logger.error("### ### ### JwtController - BadCredentialsException: {}", ex.getMessage());
+			throw new BadCredentialsException(JwtErrorCodes.CSC_BAD_CREDENTIALS.toString());
+		} catch (Exception ex) {
+			logger.error("### ### ### JwtController - Exception: {}", ex.getMessage());
+			throw new JwtCustomException(JwtErrorCodes.CSC_UNAUTHORIZED, JwtErrorCodes.CSC_UNAUTHORIZED.toString());
+		}
+		return jwtTokenDetail;
+	}
+
+	private String getRoleFromUsername(String username) {
+		Collection<? extends GrantedAuthority> auth = jwtUserDetailService.getAuthentication(username).getAuthorities();
+		return StringUtils.collectionToDelimitedString(auth, ",");
+	}
+	
+	public Authentication getAuthenticationByStringToken(Authentication token) {
+		return authenticationManager.authenticate(token);
+	}
+	
+	public JwtTokenDetail getJwtTokenByRefresh(JwtKeys jwtKeys) throws Exception {
+		
+		JwtTokenDetail jwtTokenDetail = null;
+		boolean refreshBool = true;
+		String username = null;
+		
+		username = this.getUsernameFromExpiredToken(jwtKeys.getAccessToken());
+		
+		if(username != null && jwtRefreshKeys.isJwtRefreshKeyAvailable(jwtKeys.getRefreshToken(), username)) {
+			JwtUser jwtUser = new JwtUser();
+			jwtUser.setUsername(username);
+			
+			// TODO role assign for real
+			jwtUser.setRoles(getRoleFromUsername(jwtUser.getUsername()));
+
+			SimpleGrantedAuthority authority = new SimpleGrantedAuthority(jwtUser.getRoles());
+			List<SimpleGrantedAuthority> updatedAuthorities = new ArrayList<SimpleGrantedAuthority>();
+			updatedAuthorities.add(authority);
+
+			// refresh JWT token do not need to check, and input password
+			jwtTokenDetail = this.generateJwtToken(jwtUserDetailService.getAuthentication(jwtUser.getUsername()), jwtUser);
+			
+		} else {
+			refreshBool = false;
+		}
+		
+		if(!refreshBool) {
+			logger.error("### ### ### JwtController - getAccessKeyByRefreshKey: CSC_CANNOT_REFRESH");
+			JwtCustomException jwtCustomException = new JwtCustomException(JwtErrorCodes.CSC_CANNOT_REFRESH, JwtErrorCodes.CSC_CANNOT_REFRESH.toString());
+			throw new Exception(JwtErrorCodes.CSC_CANNOT_REFRESH.toString(), jwtCustomException);
+		}
+		return jwtTokenDetail;
 	}
 	
 }

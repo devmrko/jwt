@@ -6,7 +6,6 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -39,7 +38,7 @@ public class JwtUserDetailService implements UserDetailsService {
 	private String adminRole;
 
 	@Autowired
-	private AuthenticationManager authenticationManager;
+	JwtProvider jwtProvider;
 	
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -81,7 +80,7 @@ public class JwtUserDetailService implements UserDetailsService {
 			token = new UsernamePasswordAuthenticationToken(guestUsername, guestPassword, getAuthority(guestUsername));
 		}
 		
-		return authenticationManager.authenticate(token);
+		return jwtProvider.getAuthenticationByStringToken(token);
 	}
 	
 	@Bean
