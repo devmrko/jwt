@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jwt.hello.mapper.JwtMapper">
+
+<resultMap type="jwt.hello.vo.JwtUser" id="JwtUser">
+</resultMap>
+
+	<select id="selectUsers" resultMap="JwtUser">
+		SELECT
+			ju.username,
+			ju.password
+		FROM jwt_user ju
+	</select>
+	
+	<select id="selectUser" resultMap="JwtUser">
+		SELECT
+			ju.username,
+			ju.password
+		FROM jwt_user ju
+		WHERE ju.username = #{username}
+	</select>
+	
+	<select id="selectRoles" resultType="String">
+		SELECT 
+			string_agg(jr.rolename, ',') as rolename
+		FROM 
+			jwt_user ju, 
+			jwt_permission jp, 
+			jwt_role jr
+		WHERE ju.id = jp.user_id
+		AND jr.id = jp.role_id
+		AND ju.enabled = 't'
+		AND jp.enabled = 't'
+		AND jr.enabled = 't'
+		AND ju.username = #{username}
+	</select>
+
+</mapper>

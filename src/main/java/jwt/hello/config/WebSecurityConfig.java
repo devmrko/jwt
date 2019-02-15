@@ -42,62 +42,45 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
 	JwtProvider jwtProvider;
-		
+	
 	@Bean
 	public JwtFilter authenticationTokenFilterBean() throws Exception {
-		return new JwtFilter(jwtProvider);
+		return new JwtFilter();
 	}
 	
 	@Override
 	@Order(1)
 	protected void configure(HttpSecurity httpSecurity) throws Exception {
 		
-		JwtFilter customFilter = new JwtFilter(jwtProvider);
-		httpSecurity.addFilterBefore(customFilter, UsernamePasswordAuthenticationFilter.class);
+		// add filter to verify JWT token
+		httpSecurity.addFilterBefore(new JwtFilter(), UsernamePasswordAuthenticationFilter.class);
 
-		
 		httpSecurity
-        // we don't need CSRF because our token is invulnerable
-        .csrf().disable()
-        
-        .exceptionHandling().authenticationEntryPoint(jwtEntryPoint).and()
-        
-        // don't create session
-        .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-        
-        .authorizeRequests()
-        // Un-secure specific requests(log-in, sign-up, and etc)
-        .antMatchers("/rest/auth/getAccessKey").permitAll();
+				// we don't need CSRF because our token is invulnerable
+				.csrf().disable()
+
+				.exceptionHandling().authenticationEntryPoint(jwtEntryPoint).and()
+
+				// don't create session
+				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+
+				.authorizeRequests()
+				// Un-secure specific requests(log-in, sign-up, and etc)
+				.antMatchers("/rest/auth/getAccessKey").permitAll();
         
 	}
 
 	@Override
 	 public void configure(WebSecurity web) throws Exception {
 		 
-		 String authenticationPath = "/rest/auth/getAccessKey";
-		 
-		 // AuthenticationTokenFilter will ignore the below paths
-		 
-		 web
-		 	.ignoring().antMatchers(HttpMethod.OPTIONS, "/**").and()
-		 	.ignoring()
-		 	.antMatchers(
-		 			HttpMethod.GET,
-		 			authenticationPath
-		 			)
+		String authenticationPath = "/rest/auth/getAccessKey";
+		// AuthenticationTokenFilter will ignore the below paths
+		web.ignoring().antMatchers(HttpMethod.OPTIONS, "/**").and().ignoring()
+				.antMatchers(HttpMethod.GET, authenticationPath)
 
-           // allow anonymous resource requests
-           .and()
-           .ignoring()
-           .antMatchers(
-           	HttpMethod.GET,
-           	"/",
-           	"/*.html",
-           	"/favicon.ico",
-           	"/**/*.html",
-           	"/**/*.css",
-           	"/**/*.js"
-           );
+				// allow anonymous resource requests
+				.and().ignoring()
+				.antMatchers(HttpMethod.GET, "/", "/*.html", "/favicon.ico", "/**/*.html", "/**/*.css", "/**/*.js");
 
 	}
 
@@ -123,13 +106,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	public AuthenticationManager authenticationManagerBean() throws Exception {
 		return super.authenticationManagerBean();
 	}
+	
 
 	@Autowired
 	public void configureUserDetails(AuthenticationManagerBuilder auth) throws Exception {
-		// auth.userDetailsService(jwtUserDetailService).passwordEncoder(encoder());
-		auth.userDetailsService(jwtUserDetailService);
+		// set to use authentication by jwtUserDetailService which is extended by Spring UserDetailsService
+		auth.userDetailsService(jwtUserDetailService).passwordEncoder(encoder());
 	}
-
+	
 	@Bean
 	public BCryptPasswordEncoder encoder() {
 		return new BCryptPasswordEncoder();

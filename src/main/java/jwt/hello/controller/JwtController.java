@@ -1,5 +1,7 @@
 package jwt.hello.controller;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,24 +17,24 @@ import jwt.hello.vo.JwtUser;
 
 @RestController
 public class JwtController {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(JwtController.class);
 
 	@Autowired
 	JwtProvider jwtProvider;
 
-	@RequestMapping(method = RequestMethod.POST, path="/rest/auth/login")
-	public JwtTokenDetail getAccessKeyByLoginRequest(@RequestBody JwtUser jwtUser) {
-		logger.info("### ### ### JwtController - getAccessKeyByLoginRequest");
-		JwtTokenDetail jwtTokenDetail = jwtProvider.getJwtTokens(jwtUser);
+	@RequestMapping(method = RequestMethod.POST, path = "/rest/auth/login")
+	public JwtTokenDetail getAccessKeyByLoginRequest(@RequestBody JwtUser jwtUser, HttpServletRequest request) {
+		logger.debug("### ### ### getAccessKeyByLoginRequest");
+		JwtTokenDetail jwtTokenDetail = jwtProvider.getJwtTokens(jwtUser, request);
 		return jwtTokenDetail;
 	}
 
-	@RequestMapping(method = RequestMethod.POST, path="/rest/auth/refresh")
-	public JwtTokenDetail getAccessKeyByRefreshKey(@RequestBody JwtKeys jwtKeys) throws Exception {
-		logger.info("### ### ### JwtController - getAccessKeyByRefreshKey");
-		JwtTokenDetail jwtTokenDetail = jwtProvider.getJwtTokenByRefresh(jwtKeys);
+	@RequestMapping(method = RequestMethod.POST, path = "/rest/auth/refresh")
+	public JwtTokenDetail getAccessKeyByRefreshKey(@RequestBody JwtKeys jwtKeys, HttpServletRequest request) throws Exception {
+		logger.debug("### ### ### getAccessKeyByRefreshKey");
+		JwtTokenDetail jwtTokenDetail = jwtProvider.getJwtTokenByRefresh(jwtKeys, request);
 		return jwtTokenDetail;
 	}
-	
+
 }

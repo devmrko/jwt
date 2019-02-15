@@ -28,59 +28,105 @@ public class JwtFilter extends OncePerRequestFilter {
 
 	private final String ACCESS_TOKEN_NAME = "x-access-token";	
 	
-	public JwtFilter(JwtProvider jwtProvider) {
-		this.jwtProvider = jwtProvider;
-	}
-	
 	@Autowired
 	private JwtProvider jwtProvider;
 	
+	/**
+	     * <B>History</B>
+	     * <ul>
+	     * <li>Date : 2019. 2. 15.
+	     * <li>Developer : devmrko
+	     * <li>reset SecurityContextHolder authentication 
+	     * </ul>
+	     *  
+	     */
 	private void resetAuthenticationAfterRequest() {
 		SecurityContextHolder.getContext().setAuthentication(null);
 	}
+	
+	/**
+	     * <B>History</B>
+	     * <ul>
+	     * <li>Date : 2019. 2. 15.
+	     * <li>Developer : devmrko
+	     * <li>apply authentication in SecurityContextHolder
+	     * </ul>
+	     *  
+	     * @param authentication
+	     */
+	private void applyAuthenticationAfterRequest(Authentication authentication) {
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+	}
 
+	/**
+     * <B>History</B>
+     * <ul>
+     * <li>Date : 2019. 2. 15.
+     * <li>Developer : devmrko
+     * <li>customize filter logic to apply JWT token validation
+     * </ul>
+     *  
+     * @param authentication
+     */
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
+		
 		try {
-			String jwt = request.getHeader(ACCESS_TOKEN_NAME);
-			if (StringUtils.hasText(jwt)) {
-				this.jwtProvider.validateToken(jwt);
-				Authentication authentication = jwtProvider.getAuthentication(jwt);
+			String jwtStr = request.getHeader(ACCESS_TOKEN_NAME);
+			if (StringUtils.hasText(jwtStr)) {
+				this.jwtProvider.validateJwtToken(jwtStr);
+				Authentication authentication = jwtProvider.getJwtAuthentication(jwtStr);
 				jwtProvider.checkUrlByRole(request, authentication);
-				SecurityContextHolder.getContext().setAuthentication(authentication);
+				applyAuthenticationAfterRequest(authentication);
 			}
 			filterChain.doFilter(request, response);
 			this.resetAuthenticationAfterRequest();
 			
-		} catch (ExpiredJwtException eje) {
-			logger.error("### ### ### ExpiredJwtException - Security exception for user {} - {}", eje.getClaims().getSubject(), eje.getMessage());
-			request.setAttribute("message", JwtErrorCodes.CSC_JWT_EXPIRED);
+		} catch (ExpiredJwtException ex) {
+			logger.error("### ### ### JwtFilter - ExpiredJwtException: {}", ex.getMessage());
+			// request.setAttribute("message", JwtErrorCodes.CSC_JWT_EXPIRED);
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, JwtErrorCodes.CSC_JWT_EXPIRED.toString());
 			
 		} catch (MalformedJwtException ex) {
-			logger.error("### ### ### MalformedJwtException - Security exception for user {}", ex.getMessage());
+			logger.error("### ### ### JwtFilter - MalformedJwtException: {}", ex.getMessage());
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, JwtErrorCodes.CSC_BAD_TOKEN.toString());
 			
 		} catch (Exception ex) {
 			Throwable t = ex.getCause();
-			logger.info("### ### ### Exception - {}", t.getMessage());
+			logger.info("### ### ### JwtFilter - Exception - {}", t.getMessage());
 			switch (t.getMessage()) {
 		    case "CSC_CANNOT_REFRESH":
-		    	response.sendError(HttpServletResponse.SC_UNAUTHORIZED, JwtErrorCodes.CSC_CANNOT_REFRESH.toString());
+		    	customSendError(response, JwtErrorCodes.CSC_CANNOT_REFRESH);
 		    	break;
 		    case "CSC_BAD_CREDENTIALS":
-		    	response.sendError(HttpServletResponse.SC_UNAUTHORIZED, JwtErrorCodes.CSC_BAD_CREDENTIALS.toString());
+		    	customSendError(response, JwtErrorCodes.CSC_BAD_CREDENTIALS);
 		    	break;
 		    case "CSC_URL_FORBIDDEN":
-		    	response.sendError(HttpServletResponse.SC_UNAUTHORIZED, JwtErrorCodes.CSC_URL_FORBIDDEN.toString());
+		    	customSendError(response, JwtErrorCodes.CSC_URL_FORBIDDEN);
 		    	break;
 		    case "CSC_UNAUTHORIZED":
-		    	response.sendError(HttpServletResponse.SC_UNAUTHORIZED, JwtErrorCodes.CSC_UNAUTHORIZED.toString());
+		    	customSendError(response, JwtErrorCodes.CSC_UNAUTHORIZED);
 		    	break;
 			};
 			
 		}
+	}
+	
+	/**
+	     * <B>History</B>
+	     * <ul>
+	     * <li>Date : 2019. 2. 15.
+	     * <li>Developer : devmrko
+	     * <li>handle response when expected error is occurred
+	     * </ul>
+	     *  
+	     * @param response
+	     * @param jwtErrorCodes
+	     * @throws IOException
+	     */
+	public void customSendError(HttpServletResponse response, JwtErrorCodes jwtErrorCodes) throws IOException {
+		response.sendError(HttpServletResponse.SC_UNAUTHORIZED, jwtErrorCodes.toString());
 	}
 	
 }

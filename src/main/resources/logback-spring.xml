@@ -9,6 +9,7 @@
 		</encoder>
 	</appender>
 
+	<logger name="jwt.hello" level="DEBUG" />
 	<logger name="org.spring" level="INFO" />
 	<!-- <logger name="com.topas.artserver" level="DEBUG" />  -->
 	<logger name="log4jdbc.log4j2" level="INFO" />
