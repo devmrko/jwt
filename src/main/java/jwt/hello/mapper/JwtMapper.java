@@ -15,7 +15,13 @@ public interface JwtMapper {
 	public JwtUser selectUser(@Param("username") String username);
 	
 	public String selectRoles(@Param("username") String username);
-
+	
+	public int selectIsUrlEnabled(@Param("request_url") String requestUrl, @Param("request_method") String requestMethod, @Param("rolename") String rolename);
+	
+	public void insertRefreshToken(@Param("token") String token, @Param("username") String username);
+	
+	public int updateRefreshTokenAsUsed(@Param("token") String token, @Param("username") String username);
+	
 //	public List<MpRuleDto> selectMpRule(MpRuleDto params);
 //
 //	public void insertMpRuleMaster(MpRuleDto params);

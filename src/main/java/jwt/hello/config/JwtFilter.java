@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -28,8 +27,11 @@ public class JwtFilter extends OncePerRequestFilter {
 
 	private final String ACCESS_TOKEN_NAME = "x-access-token";	
 	
-	@Autowired
 	private JwtProvider jwtProvider;
+	
+	public JwtFilter(JwtProvider jwtProvider) {
+		this.jwtProvider = jwtProvider;
+	}
 	
 	/**
 	     * <B>History</B>
@@ -77,7 +79,7 @@ public class JwtFilter extends OncePerRequestFilter {
 			if (StringUtils.hasText(jwtStr)) {
 				this.jwtProvider.validateJwtToken(jwtStr);
 				Authentication authentication = jwtProvider.getJwtAuthentication(jwtStr);
-				jwtProvider.checkUrlByRole(request, authentication);
+				this.jwtProvider.checkUrlByRole(request, authentication);
 				applyAuthenticationAfterRequest(authentication);
 			}
 			filterChain.doFilter(request, response);
@@ -94,22 +96,26 @@ public class JwtFilter extends OncePerRequestFilter {
 			
 		} catch (Exception ex) {
 			Throwable t = ex.getCause();
-			logger.info("### ### ### JwtFilter - Exception - {}", t.getMessage());
-			switch (t.getMessage()) {
-		    case "CSC_CANNOT_REFRESH":
-		    	customSendError(response, JwtErrorCodes.CSC_CANNOT_REFRESH);
-		    	break;
-		    case "CSC_BAD_CREDENTIALS":
-		    	customSendError(response, JwtErrorCodes.CSC_BAD_CREDENTIALS);
-		    	break;
-		    case "CSC_URL_FORBIDDEN":
-		    	customSendError(response, JwtErrorCodes.CSC_URL_FORBIDDEN);
-		    	break;
-		    case "CSC_UNAUTHORIZED":
-		    	customSendError(response, JwtErrorCodes.CSC_UNAUTHORIZED);
-		    	break;
-			};
+			if(t != null) {
+				logger.info("### ### ### JwtFilter - Exception - {}", t.getMessage());
 			
+				switch (t.getMessage()) {
+				case "CSC_CANNOT_REFRESH":
+					customSendError(response, JwtErrorCodes.CSC_CANNOT_REFRESH);
+					break;
+				case "CSC_BAD_CREDENTIALS":
+					customSendError(response, JwtErrorCodes.CSC_BAD_CREDENTIALS);
+					break;
+				case "CSC_URL_FORBIDDEN":
+					customSendError(response, JwtErrorCodes.CSC_URL_FORBIDDEN);
+					break;
+				case "CSC_UNAUTHORIZED":
+					customSendError(response, JwtErrorCodes.CSC_UNAUTHORIZED);
+					break;
+				};
+			} else {
+				response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
+			}
 		}
 	}
 	

@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.ibatis.annotations.Param;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -280,24 +281,21 @@ public class JwtProvider implements Serializable {
 
 		Collection<? extends GrantedAuthority> roles = authentication.getAuthorities();
 		String path = request.getServletPath().toString();
+		String method = request.getMethod().toString();
 		Iterator<? extends GrantedAuthority> itr = roles.iterator();
 
 		boolean isUrlVerified = false;
 		while (itr.hasNext()) {
 			GrantedAuthority element = itr.next();
-			List<String> curVerifiedUrlList = jwtRoles.getUrlRole().get(element.getAuthority());
-			for (int i = 0; curVerifiedUrlList.size() > i; i++) {
-				// TODO need to add method condition
-				if (path.equals(curVerifiedUrlList.get(i))) {
-					isUrlVerified = true;
-				}
-			}
+			if(jwtMapper.selectIsUrlEnabled(path, method, element.getAuthority()) == 0)
+				isUrlVerified = true;
 		}
 
 		if (!isUrlVerified) {
 			JwtCustomException jwtCustomException = new JwtCustomException(JwtErrorCodes.CSC_URL_FORBIDDEN, JwtErrorCodes.CSC_URL_FORBIDDEN.toString());
 			throw new Exception(JwtErrorCodes.CSC_URL_FORBIDDEN.toString(), jwtCustomException);
 		}
+		
 	}
 
 	/**
@@ -319,7 +317,9 @@ public class JwtProvider implements Serializable {
 
 		try {
 			jwtTokenDetail = this.generateJwtToken(jwtUserDetailService.getAuthentication(jwtUser), jwtUser);
-			jwtRefreshKeys.addJwtRefreshKey(jwtTokenDetail.getRefreshToken(), jwtUser.getUsername());
+			
+			jwtMapper.insertRefreshToken(jwtTokenDetail.getRefreshToken(), jwtUser.getUsername());
+			//jwtRefreshKeys.addJwtRefreshKey(jwtTokenDetail.getRefreshToken(), jwtUser.getUsername());
 
 		} catch (BadCredentialsException ex) {
 			logger.error("### ### ### BadCredentialsException: {}", ex.getMessage());
@@ -354,7 +354,9 @@ public class JwtProvider implements Serializable {
 		String username = null;
 		username = this.getUsernameFromToken(jwtKeys.getAccessToken());
 
-		if (username != null && jwtRefreshKeys.isJwtRefreshKeyAvailable(jwtKeys.getRefreshToken(), username)) {
+		int used = jwtMapper.updateRefreshTokenAsUsed(jwtKeys.getRefreshToken(), username);
+		
+		if (username != null && used == 1) {
 			JwtUser jwtUser = new JwtUser();
 			jwtUser.setUsername(username);
 			jwtTokenDetail = this.generateJwtToken(jwtUserDetailService.getUsernamePasswordAuthenticationToken(username), jwtUser);

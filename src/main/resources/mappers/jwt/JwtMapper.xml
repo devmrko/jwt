@@ -36,5 +36,46 @@
 		AND jr.enabled = 't'
 		AND ju.username = #{username}
 	</select>
+	
+	<select id="selectIsUrlEnabled" resultType="int">
+		SELECT 
+			count(*) as enabled
+		FROM 
+			jwt_policy jp, 
+			jwt_role jro,
+			jwt_rest jre
+		WHERE jro.id = jp.role_id
+		AND jp.rest_id = jre.id
+		AND jp.enabled = 't'
+		AND jro.enabled = 't'
+		and jre.rest_url = #{request_url}
+		and jp.method_name = #{request_method}
+		and jro.rolename = #{rolename}
+	</select>
+	
+	<insert id="insertRefreshToken">
+		insert into jwt_token_history (
+			  token
+			, reg_id
+			, upt_id
+		) values (
+			  #{token}
+			, (select id from jwt_user where username = #{username})
+			, (select id from jwt_user where username = #{username})
+		)
+	</insert>
 
+	<update id="updateRefreshTokenAsUsed">
+		UPDATE
+			jwt_token_history
+		SET
+			used = 't',
+			upt_id = cast((select id from jwt_user where username = #{username}) as varchar),
+			upt_datetime = now()
+		WHERE
+			token = #{token}
+		AND used = 'f'
+		AND reg_id = cast((select id from jwt_user where username = #{username}) as varchar)
+	</update>
+	
 </mapper>

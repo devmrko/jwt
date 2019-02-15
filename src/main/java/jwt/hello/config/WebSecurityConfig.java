@@ -45,7 +45,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Bean
 	public JwtFilter authenticationTokenFilterBean() throws Exception {
-		return new JwtFilter();
+		return new JwtFilter(jwtProvider);
 	}
 	
 	@Override
@@ -53,7 +53,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity httpSecurity) throws Exception {
 		
 		// add filter to verify JWT token
-		httpSecurity.addFilterBefore(new JwtFilter(), UsernamePasswordAuthenticationFilter.class);
+		httpSecurity.addFilterBefore(new JwtFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);
 
 		httpSecurity
 				// we don't need CSRF because our token is invulnerable
