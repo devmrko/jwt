@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
+import jwt.hello.exception.JwtCustomException;
 import jwt.hello.service.JwtProvider;
 import jwt.hello.vo.JwtErrorCodes;
 
@@ -25,12 +27,17 @@ public class JwtFilter extends OncePerRequestFilter {
 	
 	private static final Logger logger = LoggerFactory.getLogger(JwtFilter.class);
 
-	private final String ACCESS_TOKEN_NAME = "x-access-token";	
+	private String accessTokenName;	
+	
+	private String insecureUrlPattern;
 	
 	private JwtProvider jwtProvider;
 	
-	public JwtFilter(JwtProvider jwtProvider) {
+	public JwtFilter(JwtProvider jwtProvider, @Value("${jwt.accessToken.name}") String accessTokenName, 
+			@Value("${jwt.insecure.urlPattern}") String insecureUrlPattern) {
 		this.jwtProvider = jwtProvider;
+		this.accessTokenName = accessTokenName;
+		this.insecureUrlPattern = insecureUrlPattern;
 	}
 	
 	/**
@@ -75,29 +82,34 @@ public class JwtFilter extends OncePerRequestFilter {
 			throws ServletException, IOException {
 		
 		try {
-			String jwtStr = request.getHeader(ACCESS_TOKEN_NAME);
+			String jwtStr = request.getHeader(accessTokenName);
+			if(jwtStr == null) {
+				JwtCustomException jwtCustomException = new JwtCustomException(JwtErrorCodes.CSC_WITHOUT_JWT, JwtErrorCodes.CSC_WITHOUT_JWT.toString());
+				throw new Exception(JwtErrorCodes.CSC_WITHOUT_JWT.toString(), jwtCustomException);
+			}
+			
 			if (StringUtils.hasText(jwtStr)) {
 				this.jwtProvider.validateJwtToken(jwtStr);
 				Authentication authentication = jwtProvider.getJwtAuthentication(jwtStr);
 				this.jwtProvider.checkUrlByRole(request, authentication);
-				applyAuthenticationAfterRequest(authentication);
+				this.applyAuthenticationAfterRequest(authentication);
 			}
 			filterChain.doFilter(request, response);
 			this.resetAuthenticationAfterRequest();
 			
 		} catch (ExpiredJwtException ex) {
-			logger.error("### ### ### JwtFilter - ExpiredJwtException: {}", ex.getMessage());
+			logger.error("### ### ### - ExpiredJwtException: {}", ex.getMessage());
 			// request.setAttribute("message", JwtErrorCodes.CSC_JWT_EXPIRED);
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, JwtErrorCodes.CSC_JWT_EXPIRED.toString());
 			
 		} catch (MalformedJwtException ex) {
-			logger.error("### ### ### JwtFilter - MalformedJwtException: {}", ex.getMessage());
+			logger.error("### ### ### - MalformedJwtException: {}", ex.getMessage());
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, JwtErrorCodes.CSC_BAD_TOKEN.toString());
 			
 		} catch (Exception ex) {
 			Throwable t = ex.getCause();
 			if(t != null) {
-				logger.info("### ### ### JwtFilter - Exception - {}", t.getMessage());
+				logger.info("### ### ### - Exception - {}", t.getMessage());
 			
 				switch (t.getMessage()) {
 				case "CSC_CANNOT_REFRESH":
@@ -112,12 +124,21 @@ public class JwtFilter extends OncePerRequestFilter {
 				case "CSC_UNAUTHORIZED":
 					customSendError(response, JwtErrorCodes.CSC_UNAUTHORIZED);
 					break;
+				case "CSC_WITHOUT_JWT":
+					customSendError(response, JwtErrorCodes.CSC_WITHOUT_JWT);
+					break;
 				};
 			} else {
 				response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
 			}
 		}
 	}
+	
+	@Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return path.startsWith(insecureUrlPattern);
+    }
 	
 	/**
 	     * <B>History</B>

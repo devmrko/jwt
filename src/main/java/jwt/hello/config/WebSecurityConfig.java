@@ -5,8 +5,10 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -34,6 +36,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	private static final Logger logger = LoggerFactory.getLogger(WebSecurityConfig.class);
 
+	@Value("${jwt.insecure.urlPattern}")
+	private String INSECURE_URL_PATTERN;
+
+	@Value("${jwt.accessToken.name}")
+	private String ACCESS_TOKEN_NAME;	
+	
 	@Autowired
 	private JwtEntryPoint jwtEntryPoint;
 
@@ -45,15 +53,21 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Bean
 	public JwtFilter authenticationTokenFilterBean() throws Exception {
-		return new JwtFilter(jwtProvider);
+		return new JwtFilter(jwtProvider, ACCESS_TOKEN_NAME, INSECURE_URL_PATTERN);
 	}
+	
+	// to inject @Value annotation in custom filter class
+	@Bean
+    public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+        return new PropertySourcesPlaceholderConfigurer();
+    }
 	
 	@Override
 	@Order(1)
 	protected void configure(HttpSecurity httpSecurity) throws Exception {
 		
 		// add filter to verify JWT token
-		httpSecurity.addFilterBefore(new JwtFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class);
+		httpSecurity.addFilterBefore(new JwtFilter(jwtProvider, ACCESS_TOKEN_NAME, INSECURE_URL_PATTERN), UsernamePasswordAuthenticationFilter.class);
 
 		httpSecurity
 				// we don't need CSRF because our token is invulnerable
@@ -66,21 +80,19 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 				.authorizeRequests()
 				// Un-secure specific requests(log-in, sign-up, and etc)
-				.antMatchers("/rest/auth/getAccessKey").permitAll();
+				.antMatchers(INSECURE_URL_PATTERN + "/**").permitAll();
         
 	}
 
 	@Override
 	 public void configure(WebSecurity web) throws Exception {
 		 
-		String authenticationPath = "/rest/auth/getAccessKey";
 		// AuthenticationTokenFilter will ignore the below paths
-		web.ignoring().antMatchers(HttpMethod.OPTIONS, "/**").and().ignoring()
-				.antMatchers(HttpMethod.GET, authenticationPath)
+		web.ignoring().antMatchers(HttpMethod.OPTIONS, "/**").and()
+			.ignoring().antMatchers(HttpMethod.POST, INSECURE_URL_PATTERN + "/**").and()
 
-				// allow anonymous resource requests
-				.and().ignoring()
-				.antMatchers(HttpMethod.GET, "/", "/*.html", "/favicon.ico", "/**/*.html", "/**/*.css", "/**/*.js");
+			// allow anonymous resource requests
+			.ignoring().antMatchers(HttpMethod.GET, "/", "/*.html", "/favicon.ico", "/**/*.html", "/**/*.css", "/**/*.js");
 
 	}
 

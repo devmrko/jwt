@@ -5,13 +5,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.ibatis.annotations.Param;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,57 +64,6 @@ public class JwtProvider implements Serializable {
 
 	@Value("${jwt.accesstime}")
 	private long JWT_ACCESSKEY_VALID_DURATION;
-
-	/**
-	public UsernamePasswordAuthenticationToken getJwtAuthentication(final String token, final Authentication auth,final String username) {
-		logger.info("### ### ### JwtProvider - getAuthentication");
-
-		JwtParser jwtParser = Jwts.parser().setSigningKey(JWT_SECRET);
-		Jws<Claims> claimsJws = jwtParser.parseClaimsJws(token);
-		try {
-			Claims claims = claimsJws.getBody();
-			Collection<? extends GrantedAuthority> authorities = Arrays
-					.stream(claims.get(JWT_AUTHORITY).toString().split(",")).map(SimpleGrantedAuthority::new)
-					.collect(Collectors.toList());
-			return new UsernamePasswordAuthenticationToken(username, "", authorities);
-
-		} catch (Exception ex) {
-			logger.error(ex.getMessage());
-		}
-
-		return null;
-	}
-
-	public String getUsernameFromToken(String token) throws JwtCustomException, Exception {
-		logger.info("### ### ### JwtProvider - getUsernameFromToken");
-		return getClaimFromToken(token, Claims::getSubject);
-	}
-
-	public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver)
-			throws JwtCustomException, Exception {
-		logger.info("### ### ### JwtProvider - getClaimFromToken");
-		Claims claims = getAllClaimsFromToken(token);
-		return claimsResolver.apply(claims);
-	}
-
-
-	private Claims getAllClaimsFromToken(String token) throws JwtCustomException, Exception {
-		logger.info("### ### ### JwtProvider - getAllClaimsFromToken");
-		Claims returnClaim = null;
-		try {
-			returnClaim = Jwts.parser().setSigningKey(JWT_SECRET).parseClaimsJws(token).getBody();
-
-		} catch (ExpiredJwtException ex) {
-			logger.error("### ### ### getAllClaimsFromToken - ExpiredJwtException: {}", ex.getMessage());
-			throw new JwtCustomException(JwtErrorCodes.CSC_JWT_EXPIRED, ex.getMessage());
-
-		} catch (Exception ex) {
-			logger.error("### ### ### getAllClaimsFromToken - Exception: {}", ex.getMessage());
-
-		}
-		return returnClaim;
-	}
-		**/
 
 	/**
 	     * <B>History</B>
@@ -211,7 +158,7 @@ public class JwtProvider implements Serializable {
 			JwtParser jwtParser = Jwts.parser().setSigningKey(JWT_SECRET);
 			jwtParser.parseClaimsJws(token);
 		} catch (SignatureException ex) {
-			logger.error("### ### ### validateJwtToken - SignatureException: {}" + ex.getMessage());
+			logger.error("### ### ### validateJwtToken - SignatureException: {}", ex.getMessage());
 			throw new JwtCustomException(JwtErrorCodes.CSC_BAD_TOKEN, "CSC_BAD_TOKEN");
 		}
 	}
