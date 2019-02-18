@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.devmrko</groupId>
 	<artifactId>jwt</artifactId>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>jwt Maven Webapp</name>
 	<url>http://maven.apache.org</url>
@@ -84,25 +84,21 @@
 			</plugin>
 			<!-- for heroku usage -->
 			<plugin>
-	            <groupId>org.apache.maven.plugins</groupId>
-	            <artifactId>maven-dependency-plugin</artifactId>
-	            <executions>
-	                <execution>
-	                    <phase>package</phase>
-	                    <goals><goal>copy</goal></goals>
-	                    <configuration>
-	                        <artifactItems>
-	                            <artifactItem>
-	                                <groupId>com.github.jsimone</groupId>
-	                                <artifactId>webapp-runner</artifactId>
-	                                <version>9.0.16.0</version>
-	                                <destFileName>webapp-runner.jar</destFileName>
-	                            </artifactItem>
-	                        </artifactItems>
-	                    </configuration>
-	                </execution>
-	            </executions>
-	        </plugin>
+				<groupId>com.heroku.sdk</groupId>
+				<artifactId>heroku-maven-plugin</artifactId>
+				<version>1.1.1</version>
+				<configuration>
+					<appName>jwt</appName>
+					<includeTarget>false</includeTarget>
+					<includes>
+						<include>${basedir}/${full-artifact-name}</include>
+					</includes>
+					<jdkVersion>1.8</jdkVersion>
+					<processTypes>
+						<web>java $JAVA_OPTS -jar ${full-artifact-name}</web>
+					</processTypes>
+				</configuration>
+			</plugin>
 			<!-- <plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
