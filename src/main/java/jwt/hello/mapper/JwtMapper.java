@@ -1,6 +1,7 @@
 package jwt.hello.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -21,6 +22,8 @@ public interface JwtMapper {
 	public void insertRefreshToken(@Param("token") String token, @Param("username") String username);
 	
 	public int updateRefreshTokenAsUsed(@Param("token") String token, @Param("username") String username);
+	
+	public List<Map<String, String>> selectMenu();
 	
 //	public List<MpRuleDto> selectMpRule(MpRuleDto params);
 //

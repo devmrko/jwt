@@ -78,4 +78,12 @@
 		AND reg_id = cast((select id from jwt_user where username = #{username}) as varchar)
 	</update>
 	
+	<select id="selectMenu" resultType="hashmap">
+		SELECT 
+			sm.id, sm.menu_name
+		FROM 
+			public.son_menu sm
+		WHERE sm.enabled = 't'
+	</select>
+	
 </mapper>
