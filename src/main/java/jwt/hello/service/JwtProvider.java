@@ -234,7 +234,7 @@ public class JwtProvider implements Serializable {
 		boolean isUrlVerified = false;
 		while (itr.hasNext()) {
 			GrantedAuthority element = itr.next();
-			if(jwtMapper.selectIsUrlEnabled(path, method, element.getAuthority()) == 0)
+			if(jwtMapper.selectIsUrlEnabled(path, method, element.getAuthority()) == 1)
 				isUrlVerified = true;
 		}
 
