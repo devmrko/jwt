@@ -11,14 +11,14 @@
 		SELECT
 			ju.username,
 			ju.password
-		FROM jwt_user ju
+		FROM public.jwt_user ju
 	</select>
 	
 	<select id="selectUser" resultMap="JwtUser">
 		SELECT
 			ju.username,
 			ju.password
-		FROM jwt_user ju
+		FROM public.jwt_user ju
 		WHERE ju.username = #{username}
 	</select>
 	
@@ -26,9 +26,9 @@
 		SELECT 
 			string_agg(jr.rolename, ',') as rolename
 		FROM 
-			jwt_user ju, 
-			jwt_permission jp, 
-			jwt_role jr
+			public.jwt_user ju, 
+			public.jwt_permission jp, 
+			public.jwt_role jr
 		WHERE ju.id = jp.user_id
 		AND jr.id = jp.role_id
 		AND ju.enabled = 't'
@@ -41,9 +41,9 @@
 		SELECT 
 			count(*) as enabled
 		FROM 
-			jwt_policy jp, 
-			jwt_role jro,
-			jwt_rest jre
+			public.jwt_policy jp, 
+			public.jwt_role jro,
+			public.jwt_rest jre
 		WHERE jro.id = jp.role_id
 		AND jp.rest_id = jre.id
 		AND jp.enabled = 't'
@@ -54,7 +54,7 @@
 	</select>
 	
 	<insert id="insertRefreshToken">
-		insert into jwt_token_history (
+		insert into public.jwt_token_history (
 			  token
 			, reg_id
 			, upt_id
@@ -67,7 +67,7 @@
 
 	<update id="updateRefreshTokenAsUsed">
 		UPDATE
-			jwt_token_history
+			public.jwt_token_history
 		SET
 			used = 't',
 			upt_id = cast((select id from jwt_user where username = #{username}) as varchar),
