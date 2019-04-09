@@ -78,62 +78,76 @@ public class JwtFilter extends OncePerRequestFilter {
      * @param authentication
      */
 	@Override
-	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+	protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain filterChain)
 			throws ServletException, IOException {
 		
+		if ("OPTIONS".equalsIgnoreCase(req.getMethod())) {
+			res.setHeader("Access-Control-Allow-Origin", "*");
+			res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE");
+			res.setHeader("Access-Control-Allow-Credentials", "true");
+			res.setHeader("Access-Control-Allow-Headers",
+					"Content-Type, Accept, X-Requested-With, remember-me, x-access-token");
+			res.setHeader("Access-Control-Request-Headers", "x-access-token");
+			res.setHeader("Access-Control-Expose-Headers", "Content-Length, Authorization");
+		}
+
 		try {
-			String jwtStr = request.getHeader(accessTokenName);
-			if(jwtStr == null) {
-				JwtCustomException jwtCustomException = new JwtCustomException(JwtErrorCodes.CSC_WITHOUT_JWT, JwtErrorCodes.CSC_WITHOUT_JWT.toString());
+			String jwtStr = req.getHeader(accessTokenName);
+			if (jwtStr == null) {
+				JwtCustomException jwtCustomException = new JwtCustomException(JwtErrorCodes.CSC_WITHOUT_JWT,
+						JwtErrorCodes.CSC_WITHOUT_JWT.toString());
 				throw new Exception(JwtErrorCodes.CSC_WITHOUT_JWT.toString(), jwtCustomException);
 			}
-			
+
 			if (StringUtils.hasText(jwtStr)) {
 				this.jwtProvider.validateJwtToken(jwtStr);
 				Authentication authentication = jwtProvider.getJwtAuthentication(jwtStr);
-				this.jwtProvider.checkUrlByRole(request, authentication);
+				this.jwtProvider.checkUrlByRole(req, authentication);
 				this.applyAuthenticationAfterRequest(authentication);
 			}
-			filterChain.doFilter(request, response);
 			this.resetAuthenticationAfterRequest();
-			
+			filterChain.doFilter(req, res);
+
 		} catch (ExpiredJwtException ex) {
 			logger.error("### ### ### - ExpiredJwtException: {}", ex.getMessage());
 			// request.setAttribute("message", JwtErrorCodes.CSC_JWT_EXPIRED);
-			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, JwtErrorCodes.CSC_JWT_EXPIRED.toString());
-			
+			res.sendError(HttpServletResponse.SC_UNAUTHORIZED, JwtErrorCodes.CSC_JWT_EXPIRED.toString());
+
 		} catch (MalformedJwtException ex) {
 			logger.error("### ### ### - MalformedJwtException: {}", ex.getMessage());
-			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, JwtErrorCodes.CSC_BAD_TOKEN.toString());
-			
+			res.sendError(HttpServletResponse.SC_UNAUTHORIZED, JwtErrorCodes.CSC_BAD_TOKEN.toString());
+
 		} catch (Exception ex) {
 			Throwable t = ex.getCause();
-			if(t != null) {
+			if (t != null) {
 				logger.info("### ### ### - Exception - {}", t.getMessage());
-			
+
 				switch (t.getMessage()) {
 				case "CSC_CANNOT_REFRESH":
-					customSendError(response, JwtErrorCodes.CSC_CANNOT_REFRESH);
+					customSendError(res, JwtErrorCodes.CSC_CANNOT_REFRESH);
 					break;
 				case "CSC_BAD_CREDENTIALS":
-					customSendError(response, JwtErrorCodes.CSC_BAD_CREDENTIALS);
+					customSendError(res, JwtErrorCodes.CSC_BAD_CREDENTIALS);
 					break;
 				case "CSC_URL_FORBIDDEN":
-					customSendError(response, JwtErrorCodes.CSC_URL_FORBIDDEN);
+					customSendError(res, JwtErrorCodes.CSC_URL_FORBIDDEN);
 					break;
 				case "CSC_UNAUTHORIZED":
-					customSendError(response, JwtErrorCodes.CSC_UNAUTHORIZED);
+					customSendError(res, JwtErrorCodes.CSC_UNAUTHORIZED);
 					break;
 				case "CSC_WITHOUT_JWT":
-					customSendError(response, JwtErrorCodes.CSC_WITHOUT_JWT);
+					customSendError(res, JwtErrorCodes.CSC_WITHOUT_JWT);
 					break;
-				};
+				}
+				;
 			} else {
-				response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
+				res.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage());
 			}
 		}
+
 	}
 	
+	// filter에 사용하지 않을 url 패턴 설정
 	@Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();

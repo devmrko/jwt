@@ -1,6 +1,7 @@
 package jwt.hello.service;
 
 import java.io.Serializable;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -227,20 +228,28 @@ public class JwtProvider implements Serializable {
 	public void checkUrlByRole(HttpServletRequest request, Authentication authentication) throws Exception {
 
 		Collection<? extends GrantedAuthority> roles = authentication.getAuthorities();
-		String path = request.getServletPath().toString();
+		
+		String path = request.getRequestURL().toString();
 		String method = request.getMethod().toString();
+		URL aURL = new URL(path);
+
 		Iterator<? extends GrantedAuthority> itr = roles.iterator();
 
 		boolean isUrlVerified = false;
 		while (itr.hasNext()) {
 			GrantedAuthority element = itr.next();
-			if(jwtMapper.selectIsUrlEnabled(path, method, element.getAuthority()) == 1)
+			if(jwtMapper.selectIsUrlEnabled(aURL.getPath().replaceAll("/backoffice/", "").replaceAll("/", ""), method, element.getAuthority()) == 1) {
 				isUrlVerified = true;
+				break;
+			}
 		}
 
 		if (!isUrlVerified) {
+			logger.info("### it's not verified");
 			JwtCustomException jwtCustomException = new JwtCustomException(JwtErrorCodes.CSC_URL_FORBIDDEN, JwtErrorCodes.CSC_URL_FORBIDDEN.toString());
 			throw new Exception(JwtErrorCodes.CSC_URL_FORBIDDEN.toString(), jwtCustomException);
+		} else {
+			logger.info("### it's verified");
 		}
 		
 	}
