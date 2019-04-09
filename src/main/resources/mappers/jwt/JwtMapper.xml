@@ -37,6 +37,7 @@
 		AND ju.username = #{username}
 	</select>
 	
+	<!-- concat('/', (SELECT x[1] FROM (SELECT regexp_matches(#{request_url}, '^/(.*)/[^/]*$')) x(x))) -->
 	<select id="selectIsUrlEnabled" resultType="int">
 		SELECT 
 			count(*) as enabled
@@ -84,6 +85,114 @@
 		FROM 
 			public.son_menu sm
 		WHERE sm.enabled = 't'
+	</select>
+		
+	<select id="selectMemos" resultType="hashmap">
+		SELECT 
+			m.id, m.title, m.contents
+		FROM 
+			public.memo m
+		WHERE m.enabled = 't'
+	</select>
+			
+	<select id="selectMemo" resultType="hashmap">
+		SELECT 
+			m.id, m.title, m.contents
+		FROM 
+			public.memo m
+		WHERE m.enabled = 't'
+		  AND m.id = #{id}
+	</select>
+	
+	<insert id="insertMemo">
+		insert into public.memo (
+			  title
+		    , contents
+			, reg_id
+			, upt_id
+		) values (
+			  #{title}
+			, #{contents}
+			, (select id from jwt_user where username = 'admin')
+			, (select id from jwt_user where username = 'admin')
+		)
+	</insert>
+	
+	<update id="updateMemo">
+		UPDATE
+			public.memeo
+		SET
+			title = #{title},
+			contents = #{contents},
+			upt_id = cast((select id from jwt_user where username = 'admin') as varchar),
+			upt_datetime = now()
+		WHERE
+			id = #{id}
+	</update>
+	
+	<update id="deleteMemo">
+		DELETE
+			public.memeo
+		WHERE
+			id = #{id}
+	</update>
+	
+	<select id="selectComcode" resultType="hashmap">
+		SELECT 
+			cc.detailcd as code, cc.detailnm as name
+		FROM 
+			public.com_code cc
+		WHERE cc.mastrcd = #{mastrcd}
+	</select>
+	
+	
+	<select id="selectCarUseHist" resultType="jwt.hello.vo.CarUseHist" parameterType="jwt.hello.vo.CarUseHistParam">
+		SELECT 
+			cuh.seq
+			, cuh.datefrom
+			, cuh.dateto
+			, cuh.driverdept
+			, cuh.drivernm
+			, cuh.usetype
+			, cuh.usepurs
+			, cuh.usepursdetail
+			, cuh.drivedist
+			, cuh.accummileage
+			, cuh.dest
+			, cuh.dropby
+			, cuh.fueling
+			, cuh.carid
+		FROM 
+			car_use_history cuh
+		WHERE 1 =1
+		<if test="datefrom != null and datefrom != ''">
+		AND cuh.datefrom =  #{datefrom}
+		</if>
+		<if test="dateto != null and dateto != ''">
+		AND cuh.dateto =  #{dateto}
+		</if>
+		<if test="driverdept != null and driverdept != ''">
+		AND cuh.driverdept like concat('%', #{driverdept}, '%')
+		</if>
+		<if test="drivernm != null and drivernm != ''">
+		AND cuh.drivernm like concat('%', #{drivernm}, '%')
+		</if>
+		<if test="usetype != null and usetype != ''">
+		AND cuh.usetype =  #{usetype}
+		</if>
+		<if test="usepurs != null and usepurs != ''">
+		AND cuh.usepurs =  #{usepurs}
+		</if>
+		<if test="dest != null and dest != ''">
+		AND cuh.dest like concat('%', #{dest}, '%')
+		</if>
+		<if test="dropby != null and dropby != ''">
+		AND cuh.dropby like concat('%', #{dropby}, '%')
+		</if>
+		<if test="carid != null and carid != ''">
+		AND cuh.carid =  #{carid}
+		</if>
+		
 	</select>
 	
 </mapper>
