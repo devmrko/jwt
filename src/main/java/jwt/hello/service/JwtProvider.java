@@ -62,9 +62,16 @@ public class JwtProvider implements Serializable {
 	private final String JWT_SECRET = "topas-art-local";
 
 	private final String JWT_AUTHORITY = "role";
+	
+	private String accessTokenName;	
 
 	@Value("${jwt.accesstime}")
 	private long JWT_ACCESSKEY_VALID_DURATION;
+	
+	public JwtProvider(@Value("${jwt.accessToken.name}") String accessTokenName) {
+		super();
+		this.accessTokenName = accessTokenName;
+	}
 
 	/**
 	     * <B>History</B>
@@ -212,6 +219,11 @@ public class JwtProvider implements Serializable {
 		}
 		return username;
 	}
+	
+	public String getUsernameFromRequest(HttpServletRequest request) {
+		String jwtStr = request.getHeader(accessTokenName);
+		return getUsernameFromToken(jwtStr);
+	}
 
 	/**
 	 * <B>History</B>
@@ -238,7 +250,7 @@ public class JwtProvider implements Serializable {
 		boolean isUrlVerified = false;
 		while (itr.hasNext()) {
 			GrantedAuthority element = itr.next();
-			if(jwtMapper.selectIsUrlEnabled(aURL.getPath().replaceAll("/backoffice/", "").replaceAll("/", ""), method, element.getAuthority()) == 1) {
+			if(jwtMapper.selectIsUrlEnabled(aURL.getPath().replaceAll("/backoffice/", "").replace("rest",  "").replaceAll("/", ""), method, element.getAuthority()) == 1) {
 				isUrlVerified = true;
 				break;
 			}
@@ -327,5 +339,5 @@ public class JwtProvider implements Serializable {
 		}
 		return jwtTokenDetail;
 	}
-
+	
 }

@@ -15,104 +15,114 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.gson.Gson;
 
 import jwt.hello.mapper.JwtMapper;
+import jwt.hello.service.JwtProvider;
 import jwt.hello.vo.CarUseHistParam;
 
 @RestController
+@RequestMapping(value = "/rest")
 public class SonController {
-	
+
 	@Autowired
 	JwtMapper jwtMapper;
 	
-	@RequestMapping(method=RequestMethod.GET, path="/menu")
+	@Autowired
+	JwtProvider jwtProvider;
+
+	@RequestMapping(method = RequestMethod.GET, path = "/menu")
 	public String selectMenu() {
 		Gson gson = new Gson();
 		String result = gson.toJson(jwtMapper.selectMenu(), List.class);
 		return result;
 	}
-	
-	@RequestMapping(method=RequestMethod.GET, path="/memo")
+
+	@RequestMapping(method = RequestMethod.GET, path = "/memo")
 	public String selectMemos() {
 		Gson gson = new Gson();
 		String result = gson.toJson(jwtMapper.selectMemos(), List.class);
 		return result;
 	}
-	
-	@RequestMapping(method=RequestMethod.GET, path="/memo/{id}")
+
+	@RequestMapping(method = RequestMethod.GET, path = "/memo/{id}")
 	public String selectMemo(@PathVariable String id) {
 		Gson gson = new Gson();
 		String result = gson.toJson(jwtMapper.selectMemo(id), List.class);
 		return result;
 	}
-	
-	@RequestMapping(method=RequestMethod.PUT, path="/menu")
+
+	@RequestMapping(method = RequestMethod.PUT, path = "/menu")
 	public void insertMenu(@RequestParam("title") String title, @RequestParam("contents") String contents) {
 		jwtMapper.insertMemo(title, contents);
 	}
-	
-	@RequestMapping(method=RequestMethod.POST, path="/menu/{id}")
-	public void updateMenu(@PathVariable String id, @RequestParam("title") String title, @RequestParam("contents") String contents) {
+
+	@RequestMapping(method = RequestMethod.POST, path = "/menu/{id}")
+	public void updateMenu(@PathVariable String id, @RequestParam("title") String title,
+			@RequestParam("contents") String contents) {
 		jwtMapper.updateMemo(id, title, contents);
 	}
-	
-	@RequestMapping(method=RequestMethod.DELETE, path="/menu/{id}")
+
+	@RequestMapping(method = RequestMethod.DELETE, path = "/menu/{id}")
 	public void selectMenu(@PathVariable String id) {
 		jwtMapper.deleteMemo(id);
 	}
-	
-	@RequestMapping(method=RequestMethod.GET, path="/use-type")
+
+	@RequestMapping(method = RequestMethod.GET, path = "/use-type")
 	public String selectUseType() {
 		Gson gson = new Gson();
 		String result = gson.toJson(jwtMapper.selectComcode(1), List.class);
 		return result;
 	}
-	
-	@RequestMapping(method=RequestMethod.GET, path="/use-purs")
+
+	@RequestMapping(method = RequestMethod.GET, path = "/use-purs")
 	public String selectUsePurs() {
 		Gson gson = new Gson();
 		String result = gson.toJson(jwtMapper.selectComcode(2), List.class);
 		return result;
 	}
-	
-	@RequestMapping(method=RequestMethod.GET, path="/car-list")
+
+	@RequestMapping(method = RequestMethod.GET, path = "/car-list")
 	public String selectCarList() {
 		Gson gson = new Gson();
 		String result = gson.toJson(jwtMapper.selectComcode(3), List.class);
 		return result;
 	}
-	
-	@RequestMapping(method=RequestMethod.GET, path="/car-use-hist")
+
+	@RequestMapping(method = RequestMethod.GET, path = "/car-use-hist")
 	public String selectCarUseHistList(
-    		@RequestParam(required = false, defaultValue = "", name= "datefrom") String datefrom,
-            @RequestParam(required = false, defaultValue = "", name= "dateto") String dateto,
-            @RequestParam(required = false, defaultValue = "", name= "driverdept") String driverdept,
-            @RequestParam(required = false, defaultValue = "", name= "drivernm") String drivernm,
-            @RequestParam(required = false, defaultValue = "", name= "usetype") String usetype,
-            @RequestParam(required = false, defaultValue = "", name= "usepurs") String usepurs,
-            @RequestParam(required = false, defaultValue = "", name= "dest") String dest,
-            @RequestParam(required = false, defaultValue = "", name= "dropby") String dropby,
-            @RequestParam(required = false, defaultValue = "", name= "carid") String carid
-    ) {
-		
+			@RequestParam(required = false, defaultValue = "", name = "datefrom") String datefrom,
+			@RequestParam(required = false, defaultValue = "", name = "dateto") String dateto,
+			@RequestParam(required = false, defaultValue = "", name = "driverdept") String driverdept,
+			@RequestParam(required = false, defaultValue = "", name = "drivernm") String drivernm,
+			@RequestParam(required = false, name = "usetype") Integer usetype,
+			@RequestParam(required = false, name = "usepurs") Integer usepurs,
+			@RequestParam(required = false, defaultValue = "", name = "dest") String dest,
+			@RequestParam(required = false, defaultValue = "", name = "dropby") String dropby,
+			@RequestParam(required = false, name = "carid") Integer carid) {
+
 		CarUseHistParam carUseHistParam = new CarUseHistParam();
-		carUseHistParam.setCarid(carid);
-		carUseHistParam.setDatefrom(datefrom);
-		carUseHistParam.setDateto(dateto);
-		carUseHistParam.setDest(dest);
-		carUseHistParam.setDriverdept(driverdept);
-		carUseHistParam.setDrivernm(drivernm);
-		carUseHistParam.setDropby(dropby);
-		carUseHistParam.setUsepurs(usepurs);
-		carUseHistParam.setUsetype(usetype);
-		
+		if(carid != null)
+			carUseHistParam.setCarid(carid);
+		carUseHistParam.setDatefrom(datefrom.trim());
+		carUseHistParam.setDateto(dateto.trim());
+		carUseHistParam.setDest(dest.trim());
+		carUseHistParam.setDriverdept(driverdept.trim());
+		carUseHistParam.setDrivernm(drivernm.trim());
+		carUseHistParam.setDropby(dropby.trim());
+		if(usepurs != null)
+			carUseHistParam.setUsepurs(usepurs);
+		if(usetype != null)
+			carUseHistParam.setUsetype(usetype);
+
 		Gson gson = new Gson();
 		String result = gson.toJson(jwtMapper.selectCarUseHist(carUseHistParam), List.class);
 		return result;
 	}
 	
-	@RequestMapping(method=RequestMethod.PUT, path="/car-use-hist")
-	public void insertCarUseHist(@RequestBody CarUseHistParam carUseHistParam,
-            HttpServletRequest request) {
+
+	@RequestMapping(method = RequestMethod.POST, path = "/car-use-hist")
+	public void insertCarUseHist(@RequestBody CarUseHistParam carUseHistParam, HttpServletRequest request) {
+		String username = jwtProvider.getUsernameFromRequest(request);
+		carUseHistParam.setUsrid(username);
 		jwtMapper.insertCarUseHist(carUseHistParam);
 	}
-	
+
 }

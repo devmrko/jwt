@@ -11,10 +11,15 @@ public class CarUseHistParam {
 	private String dateto;
 	private String driverdept;
 	private String drivernm;
-	private String usetype;
-	private String usepurs;
+	private int usetype;
+	private int usepurs;
 	private String dest;
 	private String dropby;
-	private String carid;
+	private int carid;
+	private String usepursdetail;
+	private int drivedist;
+	private int accummileage;
+	private int fueling;
+	private String usrid;
 	
 }

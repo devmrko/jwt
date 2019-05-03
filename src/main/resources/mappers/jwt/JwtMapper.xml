@@ -166,10 +166,10 @@
 			car_use_history cuh
 		WHERE 1 =1
 		<if test="datefrom != null and datefrom != ''">
-		AND cuh.datefrom =  #{datefrom}
+		AND cuh.datefrom <![CDATA[ >= ]]> #{datefrom}
 		</if>
 		<if test="dateto != null and dateto != ''">
-		AND cuh.dateto =  #{dateto}
+		AND cuh.dateto <![CDATA[ <= ]]> #{dateto}
 		</if>
 		<if test="driverdept != null and driverdept != ''">
 		AND cuh.driverdept like concat('%', #{driverdept}, '%')
@@ -194,5 +194,41 @@
 		</if>
 		
 	</select>
+	
+	<insert id="insertCarUseHist" parameterType="jwt.hello.vo.CarUseHistParam">
+		insert into car_use_history (
+			datefrom
+			, dateto
+			, driverdept
+			, drivernm
+			, usetype
+			, usepurs
+			, usepursdetail
+			, drivedist
+			, accummileage
+			, dest
+			, dropby
+			, fueling
+			, carid
+			, reg_id
+			, upt_id
+		) values (
+			#{datefrom}
+			, #{dateto}
+			, #{driverdept}
+			, #{drivernm}
+			, #{usetype}
+			, #{usepurs}
+			, #{usepursdetail}
+			, #{drivedist}
+			, #{accummileage}
+			, #{dest}
+			, #{dropby}
+			, #{fueling}
+			, #{carid}
+			, #{usrid}
+			, #{usrid}
+		)
+	</insert>
 	
 </mapper>

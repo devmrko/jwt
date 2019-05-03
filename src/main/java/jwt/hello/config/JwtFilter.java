@@ -1,6 +1,10 @@
 package jwt.hello.config;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -39,6 +43,101 @@ public class JwtFilter extends OncePerRequestFilter {
 		this.accessTokenName = accessTokenName;
 		this.insecureUrlPattern = insecureUrlPattern;
 	}
+	
+	public void test(int n, int[] ar) {
+		Map<Integer, Integer> colorPair = new HashMap<Integer, Integer>();
+        for(int i = 0; i < n; i++) {
+            if(checkColorIdx(colorPair, ar[i]) == -1) {
+                colorPair.put(ar[i], 0);
+            } else {
+            	colorPair.replace(ar[i], colorPair.get(ar[i]) + 1);
+            }
+        }
+	}
+	
+	int getPairOfSocks(Map<Integer, Integer> colorPair) {
+		int result = 0;
+		for(Map.Entry<Integer, Integer> entry : colorPair.entrySet()) {
+			result += (entry.getValue() / 2);
+		}
+		return result;
+	}
+	
+	int checkColorIdx(Map<Integer, Integer> colorPair, int colorNo) {
+		for(Map.Entry<Integer, Integer> entry : colorPair.entrySet()) {
+			int key = entry.getKey();
+			if(key == colorNo) {
+				return key;
+			}
+		}
+        return -1;
+    }
+	
+	public void test2(int n, String s) {
+		List<String> result = new ArrayList<String>();
+		result.add("-");
+		int idx = 0;
+		for(int i = 0; i < s.length(); i++) {
+			if("U".equals(s.substring(i, 1))) {
+				if(isAbled(result, idx, "U")) {
+					idx = idx - 1;
+					for(int j = 0; j < result.size(); j++) {
+						if(j == idx) {
+							result.add(j, result.get(j) + "/");
+						} else {
+							result.add(j, result.get(j) + " ");
+						}
+					}
+				} else {
+					List<String> replace = new ArrayList<String>();
+					replace.add(returnEmptySpace(i) + "/");
+					for(int j = 0; j < result.size(); j++) {
+						replace.add(result.get(j));
+					}
+					result = replace;
+					idx = idx -1;
+				}
+				
+			} else if("D".equals(s.substring(i, 1))) {
+				if(isAbled(result, idx, "D")) {
+					idx = idx + 1;
+					for(int j = 0; j < result.size(); j++) {
+						if(j == idx) {
+							result.add(j, result.get(j) + "\\");
+						} else {
+							result.add(j, result.get(j) + " ");
+						}
+					}
+				} else {
+					for(int j = 0; j < result.size(); j++) {
+						result.add(j, result.get(j) + " ");
+					}
+					result.add(returnEmptySpace(i) + "\\");
+					idx = idx + 1;
+				}
+			}
+		}
+	}
+	
+	String returnEmptySpace(int n) {
+		String result = "";
+		for(int i = 0; i < n; i++) {
+			result += " ";
+		}
+		return result;
+	}
+	
+	boolean isAbled(List<String> result, int idx, String type) {
+		if("U".equals(type)) {
+			return 0 >= idx -1;
+		} else if("D".equals(type)) {
+			return result.size() >= idx +1;
+		}
+		System.out.println();
+		return false;
+	}
+	
+	
 	
 	/**
 	     * <B>History</B>

@@ -1,7 +1,5 @@
 package jwt.hello.config;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -17,7 +15,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
 
 import jwt.hello.exception.JwtEntryPoint;
 import jwt.hello.service.JwtProvider;
@@ -28,7 +25,7 @@ import jwt.hello.service.JwtUserDetailService;
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-	private static final Logger logger = LoggerFactory.getLogger(WebSecurityConfig.class);
+	// private static final Logger logger = LoggerFactory.getLogger(WebSecurityConfig.class);
 
 	@Value("${jwt.insecure.urlPattern}")
 	private String INSECURE_URL_PATTERN;
